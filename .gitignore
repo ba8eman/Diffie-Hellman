@@ -30,3 +30,16 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+# compiled binaries
+dhkey
+dhk-client/dhkey
+dhk-server/dhkey
+
+# common Go build output patterns, in case you rename things later
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out

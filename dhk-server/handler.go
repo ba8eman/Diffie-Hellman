@@ -33,11 +33,11 @@ func (s *Server) handleExchange(w http.ResponseWriter, r *http.Request) {
 	var dh dhKey
 	err = json.Unmarshal(bodyBytes, &dh)
 	fmt.Println(dh)
-	otherPrivateValue := dh.PrivateValue
+	otherOverTheWire := dh.OverTheWire
 	dh.initPrivateKey()
-	dh.findSharedKey(otherPrivateValue)
+	dh.findSharedKey(otherOverTheWire)
 
-	respBytes, err := json.Marshal(dh.PrivateValue)
+	respBytes, err := json.Marshal(dh.OverTheWire)
 	if err != nil {
 		http.Error(w, "failed to encode response", http.StatusInternalServerError)
 		return

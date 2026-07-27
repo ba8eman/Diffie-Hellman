@@ -17,23 +17,25 @@ type PublicValue struct {
 type dhKey struct {
 	Id           string
 	PublicValue  PublicValue
-	PrivateValue *big.Int
+	PrivateValue *big.Int `json:"-"`
+	OverTheWire  *big.Int
 	SharedSecret *big.Int `json:"-"`
 	CreatedDate  time.Time
 }
 
 func (dh *dhKey) initPrivateKey() {
-	privatePrime, err := rand.Prime(rand.Reader, 256)
+	var err error
+	dh.PrivateValue, err = rand.Prime(rand.Reader, 256)
 	if err != nil {
 		fmt.Println(err)
 	}
-	dh.PrivateValue = new(big.Int).Exp(big.NewInt(int64(dh.PublicValue.G)), privatePrime, dh.PublicValue.P)
+	dh.OverTheWire = new(big.Int).Exp(big.NewInt(int64(dh.PublicValue.G)), dh.PrivateValue, dh.PublicValue.P)
 }
 
-func (dh *dhKey) findSharedKey(otherPrivateValue *big.Int) {
+func (dh *dhKey) findSharedKey(otherOverTheWire *big.Int) {
 	fmt.Println("dh is ", dh)
-	fmt.Println("Other private value is ", otherPrivateValue)
-	dh.SharedSecret = new(big.Int).Exp(otherPrivateValue, dh.PrivateValue, dh.PublicValue.P)
+	fmt.Println("Other overTheWire value is ", otherOverTheWire)
+	dh.SharedSecret = new(big.Int).Exp(otherOverTheWire, dh.PrivateValue, dh.PublicValue.P)
 	fmt.Println(dh.SharedSecret, " is the shared secret , congratulations")
 }
 
@@ -45,4 +47,15 @@ func generateId(p *big.Int) string {
 	hasher.Write([]byte(fmt.Sprint(now.UnixNano())))
 	sum := hasher.Sum(nil)
 	return hex.EncodeToString(sum)
+}
+
+// returns a big prime and small g value
+// g is hard coded here , this is a gap, it is difficult to vet a primitive root
+func (dh *dhKey) intiPrimes() {
+	p, _ := rand.Prime(rand.Reader, 256)
+	g := 5
+	pv := PublicValue{P: p, G: g}
+	dh.Id = generateId(p)
+	dh.PublicValue = pv
+	dh.CreatedDate = time.Now()
 }

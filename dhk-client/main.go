@@ -9,6 +9,6 @@ func main() {
 		fmt.Println(err)
 	}
 	dh.initPrivateKey()
-	otherPrivateValue := intiateExchange(dh)
-	dh.findSharedKey(otherPrivateValue)
+	otherOverTheWire := intiateExchange(dh)
+	dh.findSharedKey(otherOverTheWire)
 }

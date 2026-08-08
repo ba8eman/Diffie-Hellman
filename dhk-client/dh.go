@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"math/big"
 	"time"
 )
@@ -27,16 +28,14 @@ func (dh *dhKey) initPrivateKey() {
 	var err error
 	dh.PrivateValue, err = rand.Prime(rand.Reader, 256)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("failed to generate private key: %v", err)
 	}
 	dh.OverTheWire = new(big.Int).Exp(big.NewInt(int64(dh.PublicValue.G)), dh.PrivateValue, dh.PublicValue.P)
 }
 
 func (dh *dhKey) findSharedKey(otherOverTheWire *big.Int) {
-	fmt.Println("dh is ", dh)
-	fmt.Println("Other overTheWire value is ", otherOverTheWire)
 	dh.SharedSecret = new(big.Int).Exp(otherOverTheWire, dh.PrivateValue, dh.PublicValue.P)
-	fmt.Println(dh.SharedSecret, " is the shared secret , congratulations")
+	log.Printf("shared secret established for session %s", dh.Id)
 }
 
 // generates a hashed id of prime and current time

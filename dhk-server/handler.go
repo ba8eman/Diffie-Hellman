@@ -2,21 +2,25 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
 // GET /publicKey
 // Generates a p g pair and returns to the caller
 func (s *Server) handlePublicKey(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Aaro key chodhikunu ")
 	var dh dhKey
 	dh.intiPrimes()
+
 	jsonDh, err := json.Marshal(dh)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("failed to encode public key response: %v", err)
+		http.Error(w, "failed to encode response", http.StatusInternalServerError)
+		return
 	}
+
+	log.Printf("issued new DH public parameters, id=%s", dh.Id)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonDh)
 }
@@ -31,8 +35,13 @@ func (s *Server) handleExchange(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var dh dhKey
-	err = json.Unmarshal(bodyBytes, &dh)
-	fmt.Println(dh)
+	if err := json.Unmarshal(bodyBytes, &dh); err != nil {
+		log.Printf("failed to decode exchange request: %v", err)
+		http.Error(w, "invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("received exchange request, id=%s", dh.Id)
 	otherOverTheWire := dh.OverTheWire
 	dh.initPrivateKey()
 	dh.findSharedKey(otherOverTheWire)
